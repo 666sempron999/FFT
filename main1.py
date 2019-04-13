@@ -1,4 +1,6 @@
 import pandas as pd
+from pandas import ExcelWriter
+from pandas import ExcelFile
 import matplotlib.pyplot as plt
 from scipy.integrate import quad # модуль для интегрирования
 import scipy.fftpack
@@ -15,13 +17,16 @@ def split_list(alist, wanted_parts=1):
 
 def main():
     # Чтение данных из csv
-    fixed_df = pd.read_csv("data.csv", header=None)
+    df = pd.read_excel("ddd.xls", sheetname="scope_7_1", header=None)
 
     # Преобразование данных в числа
-    x = fixed_df[0].values.tolist()
-    y = fixed_df[1].values.tolist()
+    x = df[0].values.tolist()
+    y = df[1].values.tolist()
     x = list(map(float, x))
     y = list(map(float, y))
+
+    delta = x[0]
+    x = list(map(lambda z: z+abs(delta), x))
 
     # построение оригинала
     plt.title("Оригинальные данные")
@@ -38,32 +43,6 @@ def main():
     newListY = split_list(y, delimeter)
 
     for i in range(0, len(newListY)):
-
-        # # построение оригинала
-        # plt.title("Оригинальные данные участка {}".format(i+1))
-        # plt.plot(newListX[i], newListY[i], label="data")
-        # plt.grid(True)
-        # plt.xlabel("Время t")
-        # plt.ylabel("Амплитуда В")
-        # plt.show()
-
-        # # построение преобразования
-        # y_fft = scipy.fftpack.fft(newListY[i])
-        # plt.title("БПФ участка {}".format(i+1))
-        # plt.plot(y_fft, label="data")
-        # plt.grid(True)
-        # plt.xlabel("Время t")
-        # plt.ylabel("f(t),F(t)")
-        # plt.show()
-        
-
-        # # построение спектра частот
-        # freqs = scipy.fftpack.fftfreq(len(newListX[i])) * f_s
-        # plt.title("Спектр частот участка {}".format(i+1))
-        # plt.plot(freqs, y_fft, label="data")
-        # plt.grid(True)
-        # plt.xlabel("частота")
-        # plt.ylabel("величина спектра")
 
         fig = plt.figure()
         ax1 = fig.add_subplot(3,1,1)
