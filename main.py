@@ -15,7 +15,7 @@ def split_list(alist, wanted_parts=1):
 
 def main():
     # Чтение данных из csv
-    fixed_df = pd.read_csv("data.csv", header=None)
+    fixed_df = pd.read_csv("123.csv", header=None)
 
     # Преобразование данных в числа
     x = fixed_df[0].values.tolist()
