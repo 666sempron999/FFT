@@ -455,3 +455,169 @@ plt.ylim(0, 190);
      Данные, поступающие в компьютер, состоят из N выборок (из умноженного отфильтрованного сигнала) с частотой дискретизации fs.
      Амплитуда возвращаемого сигнала варьируется в зависимости от силы отражения (то есть является свойством целевого объекта и расстояния между целью и радаром).
      Измеренная частота является показателем расстояния целевого объекта от радара.
+
+Чтобы начать анализ данных радара, мы сгенерируем несколько синтетических сигналов, после чего обратим внимание на вывод фактического радара.
+
+Напомним, что радар увеличивает свою частоту при передаче со скоростью S Гц / с. По истечении определенного времени t частота будет больше на tS (рис. 4-10). За тот же промежуток времени радиолокационный сигнал прошел d = t / v метров, где v - скорость передаваемой волны по воздуху (примерно такая же, как скорость света, 3 × 108 м / с).
+
+pict
+
+Комбинируя вышеприведенные наблюдения, мы можем рассчитать количество времени, которое понадобится сигналу, чтобы пройти, отскочить и вернуться от цели, находящейся на расстоянии R:
+TR = 2R / V
+
+pi = np.pi
+
+# Radar parameters
+fs = 78125          # Sampling frequency in Hz, i.e., we sample 78125
+                    # times per second
+
+ts = 1 / fs         # Sampling time, i.e., one sample is taken each
+                    # ts seconds
+
+Teff = 2048.0 * ts  # Total sampling time for 2048 samples
+                    # (AKA effective sweep duration) in seconds.
+
+Beff = 100e6        # Range of transmit signal frequency during the time the
+                    # radar samples, known as the "effective bandwidth"
+                    # (given in Hz)
+
+S = Beff / Teff     # Frequency sweep rate in Hz/s
+
+# Specification of targets.  We made these targets up, imagining they
+# are objects seen by the radar with the specified range and size.
+
+R = np.array([100, 137, 154, 159,  180])  # Ranges (in meter)
+M = np.array([0.33, 0.2, 0.9, 0.02, 0.1])  # Target size
+P = np.array([0, pi / 2, pi / 3, pi / 5, pi / 6])  # Randomly chosen phase offsets
+
+t = np.arange(2048) * ts  # Sample times
+
+fd = 2 * S * R / 3E8      # Frequency differences for these targets
+
+# Generate five targets
+signals = np.cos(2 * pi * fd * t[:, np.newaxis] + P)
+
+# Save the signal associated with the first target as an example for
+# later inspection
+v_single = signals[:, 0]
+
+# Weigh the signals, according to target size and sum, to generate
+# the combined signal seen by the radar.
+v_sim = np.sum(M * signals, axis=1)
+
+## The above code is equivalent to:
+#
+# v0 = np.cos(2 * pi * fd[0] * t)
+# v1 = np.cos(2 * pi * fd[1] * t + pi / 2)
+# v2 = np.cos(2 * pi * fd[2] * t + pi / 3)
+# v3 = np.cos(2 * pi * fd[3] * t + pi / 5)
+# v4 = np.cos(2 * pi * fd[4] * t + pi / 6)
+#
+## Blend them together
+# v_single = v0
+# v_sim = (0.33 * v0) + (0.2 * v1) + (0.9 * v2) + (0.02 * v3) + (0.1 * v4)
+
+
+Здесь мы сгенерировали синтетический сигнал vsingle, полученный при взгляде на одну цель (см. Рисунок 4-11). Подсчитав количество циклов, наблюдаемых за данный период времени, мы можем вычислить частоту сигнала и, таким образом, расстояние до цели.
+
+Правда, настоящий радар редко получает только одно эхо. Имитированный сигнал vsim показывает, как будет выглядеть сигнал радара с пятью целями на разных дальностях (включая две близкие друг к другу на 154 и 159 метрах), а vactual (t) показывает выходной сигнал, полученный с помощью фактического радара. Когда мы добавляем несколько эхо-сигналов вместе, результат имеет мало интуитивного смысла (рис. 4-11); до тех пор, пока мы не посмотрим на это более внимательно через объектив ДПФ.
+Выходные сигналы приемника: (a) одиночная моделируемая цель, (b) пять моделируемых целей и (c) фактические радиолокационные данные
+
+pict
+
+Внезапно, информация имеет смысл!
+
+Сюжет для | V0 | четко показывает цель на компоненте 67, а для | Vsim | показывает цели, которые произвели сигнал, который был не интерпретируемым во временной области. Реальный радиолокационный сигнал, | Vactual |, показывает большое количество целей между компонентами 400 и 500 с большим пиком в компоненте 443. Это, как представляется, эхо-сигнал от радара, освещающего высокую стену карьера.
+
+Чтобы получить полезную информацию из сюжета, мы должны определить ассортимент! Опять же, мы используем формулу:
+
+В радиолокационной терминологии каждый компонент ДПФ известен как интервальный диапазон.
+
+Это уравнение также определяет разрешение по дальности радара: цели будут различимы только в том случае, если они разделены более чем двумя ячейками дальности, например:
+
+Это фундаментальное свойство всех типов радаров.
+
+Этот результат вполне удовлетворителен, но динамический диапазон настолько велик, что мы можем очень легко пропустить некоторые пики. Давайте возьмем журнал, как и прежде, с спектрограммой:
+c = 3e8  # Approximately the speed of light and of
+         # electromagnetic waves in air
+
+fig, (ax0, ax1, ax2) = plt.subplots(3, 1)
+
+
+def dB(y):
+    "Calculate the log ratio of y / max(y) in decibel."
+
+    y = np.abs(y)
+    y /= y.max()
+
+    return 20 * np.log10(y)
+
+
+def log_plot_normalized(x, y, ylabel, ax):
+    ax.plot(x, dB(y))
+    ax.set_ylabel(ylabel)
+    ax.grid()
+
+
+rng = np.arange(N // 2) * c / 2 / Beff
+
+with plt.style.context('style/thinner.mplstyle'):
+    log_plot_normalized(rng, V_single[:N // 2], "$|V_0|$ [dB]", ax0)
+    log_plot_normalized(rng, V_sim[:N // 2], "$|V_5|$ [dB]", ax1)
+    log_plot_normalized(rng, V_actual[:N // 2], "$|V_{\mathrm{actual}}|$ [dB]"
+        , ax2)
+
+ax0.set_xlim(0, 300)  # Change x limits for these plots so that
+ax1.set_xlim(0, 300)  # we are better able to see the shape of the peaks.
+ax2.set_xlim(0, len(V_actual) // 2)
+ax2.set_xlabel('range')
+pict
+
+Наблюдаемый динамический диапазон значительно улучшен на этих графиках. Например, в реальном сигнале радара уровень шума радара стал видимым (то есть уровень, на котором электронный шум в системе начинает ограничивать способность радара обнаруживать цель).
+Оконный, Прикладной
+
+Мы добираемся туда, но в спектре моделируемого сигнала мы все еще не можем различить пики на 154 и 159 метрах. Кто знает, чего нам не хватает в реальном сигнале! Чтобы отточить пики, мы вернемся к нашему набору инструментов и воспользуемся окнами.
+
+Вот сигналы, используемые до сих пор в этом примере, оконные с окном Кайзера с β = 6,1:
+f, axes = plt.subplots(3, 1, sharex=True, figsize=(4.8, 2.8))
+
+t_ms = t * 1000  # Sample times in milli-second
+
+w = np.kaiser(N, 6.1)  # Kaiser window with beta = 6.1
+
+for n, (signal, label) in enumerate([(v_single, r'$v_0 [V]$'),
+                                     (v_sim, r'$v_5 [V]$'),
+                                     (v_actual, r'$v_{\mathrm{actual}} [V]$')]):
+    with plt.style.context('style/thinner.mplstyle'):
+        axes[n].plot(t_ms, w * signal)
+        axes[n].set_ylabel(label)
+        axes[n].grid()
+
+axes[2].set_xlim(0, t_ms[-1])
+axes[2].set_xlabel('Time [ms]');
+pict
+
+И соответствующие БПФ, или «следы дальности», в терминах радара:
+
+V_single_win = np.fft.fft(w * v_single)
+V_sim_win = np.fft.fft(w * v_sim)
+V_actual_win = np.fft.fft(w * v_actual)
+
+fig, (ax0, ax1,ax2) = plt.subplots(3, 1)
+
+with plt.style.context('style/thinner.mplstyle'):
+    log_plot_normalized(rng, V_single_win[:N // 2],
+                        r"$|V_{0,\mathrm{win}}|$ [dB]", ax0)
+    log_plot_normalized(rng, V_sim_win[:N // 2],
+                        r"$|V_{5,\mathrm{win}}|$ [dB]", ax1)
+    log_plot_normalized(rng, V_actual_win[:N // 2],
+                        r"$|V_\mathrm{actual,win}|$ [dB]", ax2)
+
+ax0.set_xlim(0, 300)  # Change x limits for these plots so that
+ax1.set_xlim(0, 300)  # we are better able to see the shape of the peaks.
+
+ax1.annotate("New, previously unseen!", (160, -35), xytext=(10, 15),
+             textcoords="offset points", color='red', size='x-small',
+             arrowprops=dict(width=0.5, headwidth=3, headlength=4,
+                             fc='k', shrink=0.1));
+
