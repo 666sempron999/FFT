@@ -6,6 +6,7 @@ from scipy.integrate import quad # модуль для интегрирован�
 import scipy.fftpack
 import numpy.fft 
 import numpy as np
+import matplotlib.gridspec as gridspec
 
 
 f_s = 1  # Sampling rate, or number of measurements per second
@@ -14,6 +15,48 @@ def split_list(alist, wanted_parts=1):
     length = len(alist)
     return [ alist[i*length // wanted_parts: (i+1)*length // wanted_parts] 
              for i in range(wanted_parts) ]
+
+
+def visData(newListX, newListY, i=-1):
+
+    egrid = (2,2)
+
+    fig = plt.figure()
+
+    ax1 = plt.subplot2grid(egrid, (0, 0), colspan=4)
+    ax1.plot(newListX, newListY, label="data", color="black")
+    ax1.set_xlabel("Время t")
+    ax1.set_ylabel("Амплитуда В")
+    ax1.grid(True)
+
+    ax2 = plt.subplot2grid(egrid, (1, 0), rowspan=1)
+    y_fft = scipy.fftpack.fft(newListY)
+    ax2.set_title("БПФ участка {}".format(i+1))
+    ax2.plot(y_fft, label="data",color="orange")
+    ax2.set_xlabel("количество выборок")
+    ax2.set_ylabel("f(t),F(t)")
+    ax2.grid(True)
+
+    ax3 = plt.subplot2grid(egrid, (1, 1), rowspan=1)
+    freqs = scipy.fftpack.fftfreq(len(newListX)) * f_s
+    ax3.set_title("Спектр частот участка {}".format(i+1))
+    ax3.plot(freqs, y_fft, label="data", color="blue")
+    ax3.set_xlabel("частота")
+    ax3.set_ylabel("величина спектра")
+    ax3.grid(True)
+
+    if i == -1:
+        ax1.set_title("Оригинальные данные")
+        ax2.set_title("БПФ считанных данных")
+        ax3.set_title("Спектр частот считанных данных")
+    else:
+        ax1.set_title("Оригинальные данные участка {}".format(i+1))
+        ax2.set_title("БПФ участка {}".format(i+1))
+        ax3.set_title("Спектр частот участка {}".format(i+1))
+
+    plt.tight_layout()
+    plt.show()
+
 
 def main():
     # Чтение данных из csv
@@ -28,13 +71,7 @@ def main():
     delta = x[0]
     x = list(map(lambda z: z+abs(delta), x))
 
-    # построение оригинала
-    plt.title("Оригинальные данные")
-    plt.plot(x, y, label="data")
-    plt.grid(True)
-    plt.xlabel("Время t")
-    plt.ylabel("Амплитуда В")
-    plt.show()
+    visData(x, y)
 
     print("Считано {} строк".format(len(y)))
     delimeter = int(input("Введите делитель диапазона (2,3,4...) - "))
@@ -42,35 +79,10 @@ def main():
     newListX = split_list(x, delimeter)
     newListY = split_list(y, delimeter)
 
+
     for i in range(0, len(newListY)):
+        visData(newListX[i], newListY[i], i)
 
-        fig = plt.figure()
-        ax1 = fig.add_subplot(3,1,1)
-        ax1.set_title("Оригинальные данные участка {}".format(i+1))
-        ax1.plot(newListX[i], newListY[i], label="data")
-        ax1.set_xlabel("Время t")
-        ax1.set_ylabel("Амплитуда В")
-        ax1.grid(True)
-
-        ax2 = fig.add_subplot(3,1,2)
-        y_fft = scipy.fftpack.fft(newListY[i])
-        ax2.set_title("БПФ участка {}".format(i+1))
-        ax2.plot(y_fft, label="data")
-        ax2.set_xlabel("Время t")
-        ax2.set_ylabel("f(t),F(t)")
-        ax2.grid(True)
-
-        ax3 = fig.add_subplot(3,1,3)
-        freqs = scipy.fftpack.fftfreq(len(newListX[i])) * f_s
-        ax3.set_title("Спектр частот участка {}".format(i+1))
-        ax3.plot(freqs, y_fft, label="data")
-        ax3.set_xlabel("частота")
-        ax3.set_ylabel("величина спектра")
-        ax3.grid(True)
-
-        plt.tight_layout()
-
-        plt.show()
 
 
 

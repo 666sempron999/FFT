@@ -50,11 +50,11 @@ def main():
                                           nperseg=1024, noverlap=M - 100,
                                           detrend=False, scaling='spectrum')
 
-    f, ax = plt.subplots(figsize=(4.8, 2.4))
-    ax.pcolormesh(times, freqs / 1000, 10 * np.log10(Sx), cmap='viridis')
-    ax.set_ylabel('Frequency [kHz]')
-    ax.set_xlabel('Time [s]');
-    plt.show()
+    # f, ax = plt.subplots(figsize=(4.8, 2.4))
+    # ax.pcolormesh(times, freqs / 1000, 10 * np.log10(Sx), cmap='viridis')
+    # ax.set_ylabel('Frequency [kHz]')
+    # ax.set_xlabel('Time [s]');
+    # plt.show()
 
 
 
