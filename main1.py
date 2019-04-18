@@ -32,8 +32,12 @@ def visData(newListX, newListY, i=-1):
     ax2 = plt.subplot2grid(egrid, (1, 0), rowspan=1)
     y_fft = scipy.fftpack.fft(newListY)
     ax2.set_title("БПФ участка {}".format(i+1))
-    ax2.plot(y_fft, label="data",color="orange")
-    ax2.set_xlabel("количество выборок")
+
+    N = int(len(y_fft)/2+1)
+
+    ax2.plot(np.abs(y_fft[:N]), label="data",color="orange")
+
+    ax2.set_xlabel("Амплитуда")
     ax2.set_ylabel("f(t),F(t)")
     ax2.grid(True)
 

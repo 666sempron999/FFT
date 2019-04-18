@@ -7,3 +7,6 @@
 Discrete Fourier Transform - https://docs.scipy.org/doc/numpy-1.13.0/reference/routines.fft.html
 
 Chapter 4. Frequency and the Fast Fourier Transform - https://www.oreilly.com/library/view/elegant-scipy/9781491922927/ch04.html
+
+Was macht der FFT Algorithmus? - https://www.cbcity.de/die-fft-mit-python-einfach-erklaert
+Was macht der FFT Algorithmus? - https://github.com/balzer82/FFT-Python
