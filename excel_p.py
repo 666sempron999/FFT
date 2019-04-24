@@ -1,6 +1,6 @@
 
 # coding: utf-8
-
+import sys
 import numpy as np
 import pandas as pd
 from pandas import ExcelWriter
@@ -71,24 +71,30 @@ def split_list(alist, wanted_parts=1):
 
 def main():
 
-    # Считывание и перобразование данных в числовой формат
-    # df = pd.read_excel("ТИМЧЕНКО(син).xls", sheetname="Лист1", header=None)
-    df = pd.read_excel("ddd.xls", sheetname="scope_7_1", header=None)
-    x = df[0].values.tolist()
-    y = df[1].values.tolist()
-    x = list(map(float, x))
-    y = list(map(float, y))
+    if len (sys.argv) < 2:
+        print("Неверные опции запуска!!!")
+        print("пример правильного ввода: fft.exe table.xls")
+    else:
 
-    if x[0] < 0:
-        delta = abs(x[0])
-        x = list(map(lambda xres: xres+delta, x))
+        # Считывание и перобразование данных в числовой формат
 
-    print("Считано {} значений".format(len(y)))
+        previous = pd.read_excel(sys.argv[1], None)
+        # список листов в таблице
+        schetsList = list(previous.keys())
+        df = pd.read_excel(sys.argv[1], sheetname=schetsList[0], header=None)
+        x = df[0].values.tolist()
+        y = df[1].values.tolist()
+        x = list(map(float, x))
+        y = list(map(float, y))
 
-    visData(x, y)
+        if x[0] < 0:
+            delta = abs(x[0])
+            x = list(map(lambda xres: xres+delta, x))
 
-    visData(x[-1000:-1], y[-1000:-1])
+        print("Считано {} значений".format(len(y)))
+        visData(x, y)
 
+        
 
 if __name__ == '__main__':
     main()
