@@ -8,7 +8,7 @@ from pandas import ExcelFile
 import matplotlib.pyplot as plt
 
 
-def visData(x, y, i=-1):
+def visData(x, y):
     """
     data visualisation with fft
     """
@@ -71,28 +71,31 @@ def split_list(alist, wanted_parts=1):
 
 def main():
 
-    if len (sys.argv) < 2:
-        print("Неверные опции запуска!!!")
-        print("пример правильного ввода: fft.exe table.xls")
-    else:
+    df = pd.read_excel("scope7_1.xls", sheetname="scope_7_1", header=None)
+    x = df[0].values.tolist()
+    y = df[1].values.tolist()
+    x = list(map(float, x))
+    y = list(map(float, y))
 
-        # Считывание и перобразование данных в числовой формат
+    if x[0] < 0:
+        delta = abs(x[0])
+        x = list(map(lambda xres: xres+delta, x))
 
-        previous = pd.read_excel(sys.argv[1], None)
-        # список листов в таблице
-        schetsList = list(previous.keys())
-        df = pd.read_excel(sys.argv[1], sheetname=schetsList[0], header=None)
-        x = df[0].values.tolist()
-        y = df[1].values.tolist()
-        x = list(map(float, x))
-        y = list(map(float, y))
-
-        if x[0] < 0:
-            delta = abs(x[0])
-            x = list(map(lambda xres: xres+delta, x))
-
+    while True:
         print("Считано {} значений".format(len(y)))
-        visData(x, y)
+
+        x1 = int(input("Введите начальное значение - "))
+        x2 = int(input("Введите конечное значение - "))
+
+        if (x2 < x1) or (x2 > len(y)) or( x1 > len(y)):
+            print("Ошибка при вводе интервала!")
+            print("*"*30)
+            continue
+
+        visData(x[x1:x2], y[x1:x2])
+        print("Нажмите Ctrl+z для выхода")
+
+        print("*"*50)
 
         
 
