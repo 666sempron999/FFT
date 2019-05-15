@@ -23,8 +23,8 @@ def visData(x, y):
 
 
     fft = np.fft.fft(y)
-    for i in range(2):
-        print("Value at index {}:\t{}".format(i, fft[i + 1]), "\nValue at index {}:\t{}".format(fft.size -1 - i, fft[-1 - i]))
+    # for i in range(2):
+    #     print("Value at index {}:\t{}".format(i, fft[i + 1]), "\nValue at index {}:\t{}".format(fft.size -1 - i, fft[-1 - i]))
 
     T = x[1] - x[0]
     N = len(y)
@@ -32,13 +32,22 @@ def visData(x, y):
 
     plt.ylabel("Amplitude")
     plt.xlabel("Frequency [Hz]")
-    plt.bar(f[:N // 2], np.abs(fft)[:N // 2] * 1 / N, width=5)  # 1 / N is a normalization factor
+
+    newX = f[:N // 2]
+    newY = np.abs(fft)[:N // 2] * 1 / N
+    plt.bar(newX, newY, width=5)  # 1 / N is a normalization factor
+    plt.grid()
     plt.show()
+
+    for i in range(0, len(newX)):
+        print("{} - {} : {}".format(i, newX[i], newY[i]))
+    # for i in enumerate(newX, newY):
+    #     print(i)
 
 
 def split_list(alist, wanted_parts=1):
     """
-    method for spliting list to euqval parts
+    method for spliting list99 to euqval parts
     """
     length = len(alist)
     return [ alist[i*length // wanted_parts: (i+1)*length // wanted_parts] 
@@ -57,21 +66,22 @@ def main():
         delta = abs(x[0])
         x = list(map(lambda xres: xres+delta, x))
 
-    while True:
-        print("Считано {} значений".format(len(y)))
+    # while True:
+    print("Считано {} значений".format(len(y)))
 
-        x1 = int(input("Введите начальное значение - "))
-        x2 = int(input("Введите конечное значение - "))
+    x1 = int(input("Введите начальное значение - "))
+    x2 = int(input("Введите конечное значение - "))
 
-        if (x2 < x1) or (x2 > len(y)) or( x1 > len(y)):
-            print("Ошибка при вводе интервала!")
-            print("*"*30)
-            continue
+    if (x2 < x1) or (x2 > len(y)) or( x1 > len(y)):
+        print("Ошибка при вводе интервала!")
+        print("*"*30)
+        # continue
+        return False
 
-        visData(x[x1:x2], y[x1:x2])
-        print("Нажмите Ctrl+z для выхода")
+    visData(x[x1:x2], y[x1:x2])
+    print("Нажмите Ctrl+z для выхода")
 
-        print("*"*50)
+    print("*"*50)
 
         
 

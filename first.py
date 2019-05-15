@@ -21,6 +21,7 @@ def main():
     plt.ylabel("Amplitude")
     plt.xlabel("Time [s]")
     plt.plot(t, s)
+    plt.grid()
     plt.show()
 
     fft = np.fft.fft(s)
@@ -40,6 +41,7 @@ def main():
     plt.ylabel("Amplitude")
     plt.xlabel("Frequency [Hz]")
     plt.bar(f[:N // 2], np.abs(fft)[:N // 2] * 1 / N, width=2.5)  # 1 / N is a normalization factor
+    plt.grid()
     plt.show()
 
 if __name__ == '__main__':
