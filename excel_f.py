@@ -1,86 +1,98 @@
 
 # coding: utf-8
-import sys
-import numpy as np
-import pandas as pd
-from pandas import ExcelWriter
-from pandas import ExcelFile
-import matplotlib.pyplot as plt
+
+import numpy as np # модуль для численных вычислений
+import pandas as pd # модуль для обработки excel файлов
+import matplotlib.pyplot as plt # модуль для визуализации данных
 
 
 def visData(x, y):
     """
-    data visualisation with fft
+    Функция для визуализации быстрого преобразования фурье
     """
 
-    # plot original data
-    plt.title("Оригинальные данные")
-    plt.plot(x, y, label="data")
-    plt.grid(True)
-    plt.xlabel("Время t")
-    plt.ylabel("Амплитуда В")
-    plt.show()
+    # отрисовка данных, полученных из файла
+    plt.title("Оригинальные данные")    # Заголовок графика
+    plt.plot(x, y, label="data")        # Отрисовка значения функции y=f(x) на координатной оси
+    plt.grid(True)                      # Включение показа координатной сетки на графике
+    plt.xlabel("Время t")               # Задание подписи к оси х
+    plt.ylabel("Амплитуда В")           # Задание подписи к оси у
+    plt.show()                          # Отображение графика
 
-
+    # Вычисление быстрого преобразования фурье по оси y
     fft = np.fft.fft(y)
-    # for i in range(2):
-    #     print("Value at index {}:\t{}".format(i, fft[i + 1]), "\nValue at index {}:\t{}".format(fft.size -1 - i, fft[-1 - i]))
 
+    # Вычисление частоты между двумя рядомстоящими точками (нужно для определения периода)
     T = x[1] - x[0]
+
+    # Вычисление длинны выборки (колличества элементов)
     N = len(y)
+
+    # описание равномерного оаспределения от 0 до величины периода с колличеством N
     f = np.linspace(0, 1 / T, N)
 
-    plt.ylabel("Amplitude")
-    plt.xlabel("Frequency [Hz]")
+    plt.ylabel("Amplitude")             # Задание подписи к оси х
+    plt.xlabel("Frequency [Hz]")        # Задание подписи к оси у
 
+    # формирование последовательности для оси х согласно теореме Котельникова
     newX = f[:N // 2]
-    newY = np.abs(fft)[:N // 2] * 1 / N
-    plt.bar(newX, newY, width=5)  # 1 / N is a normalization factor
-    plt.grid()
-    plt.show()
 
+    # формирование последовательности для оси у согласно теореме Котельникова
+    newY = np.abs(fft)[:N // 2] * 1 / N
+    
+    plt.bar(newX, newY, width=5)        # Отрисовка полученных результатов в виде гистограммы
+    plt.grid()                          # Включение показа координатной сетки на графике
+    plt.show()                          # Отображение графика
+
+    # Вывод всех точек х->y из указанного интервала на экран
     for i in range(0, len(newX)):
         print("{} - {} : {}".format(i, newX[i], newY[i]))
-    # for i in enumerate(newX, newY):
-    #     print(i)
-
-
-def split_list(alist, wanted_parts=1):
-    """
-    method for spliting list99 to euqval parts
-    """
-    length = len(alist)
-    return [ alist[i*length // wanted_parts: (i+1)*length // wanted_parts] 
-             for i in range(wanted_parts) ]
 
 
 def main():
-
+    """
+    Далее описана функция для считывания данных из файла excel
+    Аргументы:
+    1) "scope7_1.xls" - название файла
+    2) sheetname="scope_7_1" - имя листа в таблице
+    3) header=None - значит что таблица будет считана без заголовков
+    Примечание:
+    Программа расчитана на то, что ей на вход будет дан файл с двумя заполнеными первыми столбцами
+    если файл будет содержать другие столбцы, формулы или ссфлки, то программа может некоректно считать данные 
+    """
     df = pd.read_excel("scope7_1.xls", sheetname="scope_7_1", header=None)
+
+    # Следующие строки нужны для того, чтоб из считанных из файла данных получить 
+    # массив вещественных чисел для осей х и у
     x = df[0].values.tolist()
     y = df[1].values.tolist()
     x = list(map(float, x))
     y = list(map(float, y))
 
+    # Если по оси х был  найден промежуток с отрицательным временем - производится смещение в положительную область
     if x[0] < 0:
         delta = abs(x[0])
         x = list(map(lambda xres: xres+delta, x))
 
-    # while True:
+    # Вывод на экран строки о колличестве считанных значений
     print("Считано {} значений".format(len(y)))
 
+    # Консольное меню, в котором предлагается ввести начальное и конечное хначение по оси времени
     x1 = int(input("Введите начальное значение - "))
     x2 = int(input("Введите конечное значение - "))
 
+    # Защита от неаерного ввода значения интервала
     if (x2 < x1) or (x2 > len(y)) or( x1 > len(y)):
         print("Ошибка при вводе интервала!")
         print("*"*30)
-        # continue
         return False
 
+    # Визуализация и непосредственный расчёт БПФ для указанного интервала
+    # (последовательность действий описана в функции visData, расположенной выше)
     visData(x[x1:x2], y[x1:x2])
     print("Нажмите Ctrl+z для выхода")
 
+    # Печать строки завершителя
     print("*"*50)
 
         
